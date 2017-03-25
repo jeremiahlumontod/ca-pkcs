@@ -22,14 +22,12 @@ by the way, the ssl explained above is for 2 way authentication which is much se
 which require that only the server side or the web application is having an ssl key
 
 
-below are 2 examples. it can be use internally since this is the same tool in generating ssl keys
-
 the following directory structure is required:
 
 ca
-----cacert
-----clientcert
-----servercert
-----openssl.cfg
+>>cacert
+>>clientcert
+>>servercert
+>>openssl.cfg
 
 see the instructions in src/main/resources/how to create certs signed by ca using keytool and openssl.txt
