@@ -33,4 +33,10 @@ the following directory structure is required:
 openssl.cfg can be found at src/main/resources
 
 
+the following tools are required:
+1) java 1.8
+2) openssl 0.9.8
+3) java IDE (Spring Tools Suite 3.8.3-RELEASE is fine) 
+
+
 see the instructions in src/main/resources/how to create certs signed by ca using keytool and openssl.txt
