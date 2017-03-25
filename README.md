@@ -30,4 +30,7 @@ the following directory structure is required:
 4) servercert under root
 5) openssl.cfg under root
 
+openssl.cfg can be found at src/main/resources
+
+
 see the instructions in src/main/resources/how to create certs signed by ca using keytool and openssl.txt
