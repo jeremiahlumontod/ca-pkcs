@@ -31,3 +31,5 @@ ca
 ----clientcert
 ----servercert
 ----openssl.cfg
+
+see the instructions in src/main/resources/how to create certs signed by ca using keytool and openssl.txt
