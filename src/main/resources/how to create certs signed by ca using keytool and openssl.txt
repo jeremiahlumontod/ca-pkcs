@@ -1,0 +1,174 @@
+
+step by step tutorial on how to create an ssl keys.
+ssl keys has 3 components; 
+1) the user. a good example of ssl user is a browser
+2) the server, a good example is the web applicant hosted somewhere
+3) the authority that guarantees the ssl key is legit
+
+getting an ssl key works like the following:
+an organization will contact the authority to acquire an ssl key. the organization will be given 2 keys,
+public and private. the public key will be given by the organization to any third party that wishes to
+have access to an application the organization owns.
+
+in a web application scenario, the public key will be embedded to the browser by the third party. this public key
+will be use by the browser to encrypt the information before passing or making a GET request to the web application
+
+on the side of web application, it will decrypt the encrypted information using its private key
+
+by the way, the ssl explained above is for 2 way authentication which is much secured than one way
+which require that only the server side or the web application is having an ssl key
+
+
+below are 2 examples. it can be use internally since this is the same tool in generating ssl keys
+
+the following directory structure is required:
+
+ca
+----cacert
+----clientcert
+----servercert
+----openssl.cfg
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+fictitious company applying for certificate as client identity
+
+		CA side
+-create private key for ca
+openssl genrsa -out cacert/jmlca.key -des 2048
+type cacert/jmlca.key
+-create self signed public key or certificate for ca
+openssl req -new -key cacert/jmlca.key -x509 -days 3650 -out cacert/jmlca.crt -config openssl.cfg
+type cacert/ca.crt
+openssl x509 -in cacert/jmlca.crt -noout -text
+
+		applicant side
+-create keystore for applicant. output will be a keystore with private key inside, nothing else
+keytool -genkeypair -alias jmlclientkey -keysize 1024 -keystore clientcert/jmlclient.jks -storepass 123456 -keypass 123456
+keytool -list -keystore clientcert/jmlclient.jks -storepass 123456
+-create a csr, applicant will need the private from the keystore created earlier using the private key with same alias used here
+keytool -certreq -alias jmlclientkey -keypass 123456 -keystore clientcert/jmlclient.jks -storepass 123456 -file clientcert/jmlclient.csr
+type clientcert/jmlclient.csr		
+
+
+		CA side
+-ca will sign csr from applicant using the self signed public / certificate key
+openssl x509 -req -in clientcert/jmlclient.csr -CA cacert/jmlca.crt -CAkey cacert/jmlca.key -out clientcert/jmlclient.crt -days 365 -CAcreateserial -CAserial cacert/ca.seq
+openssl x509 -in clientcert/jmlclient.crt -noout -text
+
+		applicant side
+-place ca public / certificate to applicant keystore. ca will become a trusted.
+keytool -importcert -alias jmlcacrt -keypass 123456 -file cacert/jmlca.crt -keystore clientcert/jmlclient.jks -storepass 123456
+keytool -list -keystore clientcert/jmlclient.jks -storepass 123456
+(to delete an entry in keystore: keytool -delete -alias cacrt -keystore clientcert/jmlclient.jks -storepass 123456)
+-place applicant sign csr, it will become a crt or certificate in public format
+keytool -importcert -alias jmlclientcrt -keypass 123456 -file clientcert/jmlclient.crt -keystore clientcert/jmlclient.jks -storepass 123456
+keytool -list -keystore clientcert/jmlclient.jks -storepass 123456
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+fictitious company applying for certificate as identity for web applicant hosting
+
+- skip this part if ca side is already establish
+
+		CA side
+-create private key for ca
+openssl genrsa -out cacert/ca.key -des 2048
+type cacert/ca.key
+-create self signed public key or certificate for ca
+openssl req -new -key cacert/ca.key -x509 -days 3650 -out cacert/ca.crt -config openssl.cfg
+type cacert/ca.crt
+openssl x509 -in cacert/ca.crt -noout -text
+
+- end, skip this part if ca side is already establish
+
+
+
+		applicant side
+-create keystore for applicant. output will be a keystore with private key inside, nothing else
+keytool -genkeypair -alias jmlserverkey -keysize 1024 -keystore servercert/jmlserver.jks -storepass 123456 -keypass 123456
+keytool -list -keystore servercert/jmlserver.jks -storepass 123456
+-create a csr, applicant will need the private from the keystore created earlier using the private key with same alias used here
+keytool -certreq -alias jmlserverkey -keypass 123456 -keystore servercert/jmlserver.jks -storepass 123456 -file servercert/jmlserver.csr
+type servercert/jmlserver.csr		
+
+		CA side
+-ca will sign csr from applicant using the self signed public / certificate key
+openssl x509 -req -in servercert/jmlserver.csr -CA cacert/ca.crt -CAkey cacert/ca.key -out servercert/jmlserver.crt -days 365 -CAcreateserial -CAserial cacert/ca.seq
+openssl x509 -in servercert/jmlserver.crt -noout -text
+
+		applicant side
+-place ca public / certificate to applicant keystore. ca will become a trusted.
+keytool -importcert -alias jmlcacrt -keypass 123456 -file cacert/ca.crt -keystore servercert/jmlserver.jks -storepass 123456
+keytool -list -keystore servercert/jmlserver.jks -storepass 123456
+(to delete an entry in keystore: keytool -delete -alias jmlcacrt -keystore servercert/jmlserver.jks -storepass 123456)
+-place applicant sign csr, it will become a crt or certificate in public format
+keytool -importcert -alias jmlservercrt -keypass 123456 -file servercert/jmlserver.crt -keystore servercert/jmlserver.jks -storepass 123456
+keytool -list -keystore servercert/jmlserver.jks -storepass 123456
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-after the ca, server and client certificates has been generated, we will create a pkcs12 keystore that we will use to export to
+ our web browser which is our client side of the web server / client app communication. we will pick the private key of the client side
+ which is the private key automatically generated by keytool, save it to a file by running our java program and copying the result on the
+ screen to a file then execute openssl program that will create the pkcs12 file, then import this file later to our browser as
+ our client identity certificate.
+ 
+-run DumpPrivateKey to extract private key of
+ clientcert/jmlclient.jks for client identity application or servercert/jmlserver.jks for web applicant hosting
+ to clientcert/jmlclientkey.pem / servercert/jmlserverkey.pem (adjust accordingly in code) 
+ then execute the following line below(labelled "execute this for extract private key") 
+ to export private and public key to pkcs12 format which can 
+ be uploaded to firefox later as client certificate. we need private and public keys, public key to be send to the 
+ other end  / server use to encrypt message from us and private key for decrypting incoming message (that came from us).
+ 
+ so in summary, the other end will send its public key for us to use in encrypting messages. the other end has private 
+ key which will be use in decrypting the encrypted message from us.
+ 
+ to validate keys on both ends coming from both ends, ca certificate will be attached to keystores. jmlserver.jks on tomcat side
+ and jmlclient.p12 on browser / firefox side.
+
+ execute this for extracting private key:
+ > for "fictitious company applying for certificate as client identity"
+ openssl pkcs12 -export -in clientcert/jmlclient.crt -inkey clientcert/jmlclientkey.pem -certfile cacert/jmlca.crt -out clientcert/jmlclient.p12
+
+ > for "fictitious company applying for certificate as identity for web applicant hosting"
+ openssl pkcs12 -export -in servercert/jmlserver.crt -inkey servercert/jmlserverkey.pem -certfile cacert/ca.crt -out servercert/jmlserver.p12
+
+
+
+
+
+
+> additional infos
+
+- add client public keys to server keystore
+keytool -importcert -alias jmlclientcrt -keypass 123456 -file clientcert/jmlclient.crt -keystore servercert/jmlserver.jks -storepass 123456
+keytool -list -keystore servercert/jmlserver.jks -storepass 123456
+
+
+- add server public keys to client keystore
+keytool -importcert -alias jmlservercrt -keypass 123456 -file servercert/jmlserver.crt -keystore servercert/jmlserver.jks -storepass 123456
+keytool -list -keystore servercert/jmlserver.jks -storepass 123456
+
+
+
+
+
+
+
+
+- extracting private key
+
+keytool -importkeystore -srckeystore clientcert/jmlclient.jks -destkeystore clientcert/jmlclientprivatekey.p12 -deststoretype PKCS12
+
+keytool -importkeystore -srckeystore clientcert/jmlclient.jks -destkeystore clientcert/jmlclientprivatekey.p12 -deststoretype PKCS12 -srcalias jmlclientkey -deststorepass 123456 -destkeypass 123456
+
+
