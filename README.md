@@ -24,10 +24,10 @@ which require that only the server side or the web application is having an ssl 
 
 the following directory structure is required:
 
-ca
->>cacert
->>clientcert
->>servercert
->>openssl.cfg
+1) root directory
+2) cacert under root
+3) clientcert under root
+4) servercert under root
+5) openssl.cfg under root
 
 see the instructions in src/main/resources/how to create certs signed by ca using keytool and openssl.txt
