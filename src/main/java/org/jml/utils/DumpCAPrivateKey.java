@@ -10,7 +10,7 @@ import org.apache.commons.codec.binary.Base64;
  *
  * @author t-jmlumontod
  */
-public class DumpPrivateKey {
+public class DumpCAPrivateKey {
 
     public static void main(String[] args) throws Exception {
         /**
@@ -23,11 +23,11 @@ public class DumpPrivateKey {
     	
         try {
         	
-	        final String keystoreName = "/Users/jeremiahlumontod/Desktop/folders/projs/refs/ca/clientcert/jmlclient.jks";
-        	//final String keystoreName = "/Users/jeremiahlumontod/Desktop/folders/projs/refs/ca/servercert/jmlserver.jks";
+	        //final String keystoreName = "/Users/jeremiahlumontod/Desktop/folders/projs/refs/ca/clientcert/jmlclient.jks";
+        	final String keystoreName = "/Users/jeremiahlumontod/Desktop/folders/projs/refs/ca/servercert/jmlserver.jks";
 	        final String keystorePassword = "123456";
-	        final String alias = "jmlclientkey";
-	        //final String alias = "jmlserverkey";
+	        //final String alias = "jmlclientkey";
+	        final String alias = "jmlserverkey";
 	        java.security.KeyStore ks = java.security.KeyStore.getInstance("jks");
 	        ks.load(new java.io.FileInputStream(keystoreName), keystorePassword.toCharArray());
 	        System.out.println("-----BEGIN PRIVATE KEY-----");
@@ -39,15 +39,6 @@ public class DumpPrivateKey {
         }catch(Exception e) {
         	e.printStackTrace();
         }
-    }
-    
-    
-    public void showClientCert() {
-    	try {
-    		
-    	}catch(Exception e) {
-    		e.printStackTrace();
-    	}
     }
 }
 
