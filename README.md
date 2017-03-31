@@ -2,7 +2,6 @@
 creating an ssl key in full cycle that involves certificate authority, applicant, and the ssl key users 
 
 
-step by step tutorial on how to create an ssl keys.
 ssl keys has 3 components; 
 1) the user. a good example of ssl user is a browser
 2) the server, a good example is the web applicant hosted somewhere
